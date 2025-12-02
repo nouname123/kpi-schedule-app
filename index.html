@@ -1,185 +1,306 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPI Schedule - Зручний розклад КПІ</title>
-    <meta name="description" content="Сучасний Android застосунок для перегляду розкладу занять, сесії та викладачів КПІ. Темна тема, офлайн режим.">
+    <title>KPI Schedule - Твій розклад у кишені</title>
+    <meta name="description" content="Зручний розклад КПІ для Android. Темна тема, сесія, розклад викладачів.">
     
-    <meta property="og:title" content="KPI Schedule App">
-    <meta property="og:description" content="Твій ідеальний розклад. Завантажуй на Android.">
-    <meta property="og:image" content="logo.png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        :root {
-            --primary: #0072C6; /* КПІ Синій */
-            --primary-dark: #005a9e;
-            --bg: #F9FAFB;
-            --surface: #FFFFFF;
-            --text: #1F2937;
-            --text-secondary: #6B7280;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617; /* Slate 950 - Deep Dark Background */
+            color: #f8fafc;
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg: #121212;
-                --surface: #1E1E1E;
-                --text: #F3F4F6;
-                --text-secondary: #9CA3AF;
-            }
+        /* Custom Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Blob Animation */
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
         
-        body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
-
-        .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
-
-        /* HERO SECTION */
-        header {
-            text-align: center;
-            padding: 60px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .animation-delay-4000 {
+            animation-delay: 4s;
         }
 
-        .logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 24px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            margin-bottom: 24px;
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
 
-        h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 12px; }
-        .subtitle { font-size: 1.2rem; color: var(--text-secondary); max-width: 600px; margin-bottom: 32px; }
-
-        .download-btn {
-            background-color: var(--primary);
-            color: white;
-            padding: 16px 32px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.1rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(0, 114, 198, 0.3);
-            transition: transform 0.2s, background-color 0.2s;
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        .download-btn:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
-        .download-btn svg { width: 24px; height: 24px; fill: white; }
-
-        /* FEATURES */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin: 40px 0;
+        /* Phone Frame Style */
+        .phone-frame {
+            border: 12px solid #1e293b;
+            border-radius: 2.5rem;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            aspect-ratio: 9/19.5;
+            background: #000;
         }
 
-        .feature-card {
-            background: var(--surface);
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(to right, #60a5fa, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
-        .feature-icon { font-size: 2rem; margin-bottom: 12px; }
-        .feature-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 8px; }
-        .feature-desc { color: var(--text-secondary); font-size: 0.95rem; }
-
-        /* SCREENSHOTS */
-        .screenshots {
-            display: flex;
-            gap: 20px;
-            overflow-x: auto;
-            padding: 20px 0;
-            justify-content: center; /* Center on desktop */
-        }
-
-        .screenshot {
-            width: 260px; /* Adjust based on your images */
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            border: 4px solid var(--surface);
-        }
-
-        /* FOOTER */
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            border-top: 1px solid rgba(0,0,0,0.1);
-            margin-top: 40px;
-        }
-
-        .disclaimer { font-size: 0.8rem; margin-top: 12px; opacity: 0.7; }
         
-        a { color: var(--primary); text-decoration: none; }
-        
-        /* Mobile adjustment for screenshots */
-        @media (max-width: 600px) {
-            .screenshots { justify-content: flex-start; padding-left: 20px; padding-right: 20px; }
-            h1 { font-size: 2rem; }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px -10px rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.4);
         }
     </style>
 </head>
-<body>
+<body class="overflow-x-hidden relative">
 
-    <div class="container">
-        <header>
-            <img src="logo.png" alt="KPI Schedule Logo" class="logo">
-            
-            <h1>KPI Schedule</h1>
-            <p class="subtitle">Найзручніший розклад для студентів КПІ. Жодної реклами.</p>
-            
-            <a href="KpiSchedule.apk" class="download-btn" download>
-                <svg viewBox="0 0 24 24"><path d="M3,20.5V23.5H21.92V20.5H3M15.29,15.82L13.79,17.32L17.58,21.11H12.37V19.16H11.5V21.11H7.34L11.13,17.32L9.63,15.82L5.84,19.61L2.05,15.82L3.55,14.32L7.34,18.11V2H17.58V18.11L21.37,14.32L22.87,15.82L19.08,19.61L15.29,15.82Z" /></svg>
-                Завантажити APK
-            </a>
-            <p style="margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary);">Версія 1.0 • Android 8.0+</p>
-        </header>
-
-        <section class="screenshots">
-            <img src="screen1.png" alt="Screenshot 1" class="screenshot">
-            <img src="screen2.png" alt="Screenshot 2" class="screenshot">
-            <img src="screen3.png" alt="Screenshot 3" class="screenshot">
-        </section>
-
-        <section class="features">
-            <div class="feature-card">
-                <div class="feature-icon">📅</div>
-                <div class="feature-title">Розумний розклад</div>
-                <div class="feature-desc">Автоматично визначає поточний тиждень та підсвічує пари, які йдуть прямо зараз.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🎓</div>
-                <div class="feature-title">Розклад викладачів</div>
-                <div class="feature-desc">Зручний пошук викладачів та перегляд їхнього навантаження.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🌙</div>
-                <div class="feature-title">Темна тема</div>
-                <div class="feature-desc">Ідеально для перегляду розкладу вночі. Економить заряд батареї.</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📝</div>
-                <div class="feature-title">Сесія</div>
-                <div class="feature-desc">Окремий розділ для іспитів та заліків з відліком днів.</div>
-            </div>
-        </section>
-
-        <footer>
-            <p>Made with ❤️ by <a href="https://t.me/diimkkaa" target="_blank">@diimkkaa</a></p>
-            <p class="disclaimer">Неофіційний клієнт. Дані надаються <a href="https://schedule.kpi.ua" target="_blank">campus.kpi.ua</a>.</p>
-        </footer>
+    <!-- Background Decoration (Bubbles) -->
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <!-- Top Left Blob (Blue) -->
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-blob"></div>
+        
+        <!-- Bottom Right Blob (Purple) -->
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-2000"></div>
     </div>
 
-</body>
+    <!-- Navigation -->
+    <nav class="container mx-auto max-w-6xl px-6 py-6 flex justify-between items-center relative z-10">
+        <div class="text-2xl font-bold flex items-center gap-2">
+            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="calendar" class="text-white w-5 h-5"></i>
+            </div>
+            <span>KPI Schedule</span>
+        </div>
+        <a href="KpiSchedule.apk" class="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2 rounded-full transition-all duration-300">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Завантажити .apk</span>
+        </a>
+    </nav>
 
+    <!-- Hero Section -->
+    <header class="container mx-auto max-w-6xl px-6 pt-10 pb-20 md:pt-20 md:pb-32 relative z-10">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+            
+            <!-- Text Content -->
+            <div class="flex-1 text-center md:text-left space-y-8 fade-in-up">
+                <div class="inline-block px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-sm font-medium mb-2">
+                    Версія 1.0 вже доступна
+                </div>
+                <h1 class="text-4xl md:text-6xl font-bold leading-tight">
+                    Твій розклад <br />
+                    <span class="text-gradient">завжди під рукою</span>
+                </h1>
+                <p class="text-lg text-slate-400 max-w-lg mx-auto md:mx-0">
+                    Зручний, швидкий та естетичний клієнт розкладу
+                </p>
+                
+                <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+                    <a href="KpiSchedule.apk" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-blue-600 font-pj rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 hover:bg-blue-700 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]">
+                        <i data-lucide="download" class="w-5 h-5 mr-2 group-hover:animate-bounce"></i>
+                        Завантажити APK
+                    </a>
+                    <a href="#features" class="px-8 py-4 text-lg font-medium text-slate-300 hover:text-white transition-colors">
+                        Дізнатись більше
+                    </a>
+                </div>
+                
+                <p class="text-xs text-slate-500 pt-2">
+                    * Для Android пристроїв
+                </p>
+            </div>
+
+            <!-- Hero Image / Phone Mockup -->
+            <div class="flex-1 w-full max-w-xs md:max-w-sm mx-auto relative z-10 fade-in-up" style="animation-delay: 0.2s;">
+                <div class="phone-frame animate-float bg-black">
+                    <img src="screen1.png" alt="Головний екран додатку" class="w-full h-full object-cover">
+                </div>
+                <!-- Subtle glow behind phone -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-blue-500/20 filter blur-3xl -z-10 rounded-full"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 relative z-10">
+        <div class="container mx-auto max-w-6xl px-6">
+            <div class="text-center mb-16 fade-in-up">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Чому варто спробувати?</h2>
+                <p class="text-slate-400">Всі необхідні інструменти для комфортного навчання.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-blue-500/50 group">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-500/40 transition-colors">
+                        <i data-lucide="zap" class="text-blue-400 w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Розумний розклад</h3>
+                    <p class="text-slate-400 text-sm">Автоматично визначає поточний тиждень та підсвічує пари, які йдуть прямо зараз.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-purple-500/50 group" style="transition-delay: 0.1s;">
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-500/40 transition-colors">
+                        <span class="text-2xl">🎓</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Розклад викладачів</h3>
+                    <p class="text-slate-400 text-sm">Зручний пошук викладачів та перегляд їхнього навантаження.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-indigo-500/50 group" style="transition-delay: 0.2s;">
+                    <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-500/40 transition-colors">
+                        <span class="text-2xl">🌙</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Темна тема</h3>
+                    <p class="text-slate-400 text-sm">Ідеально для перегляду розкладу вночі. Економить заряд батареї.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-green-500/50 group" style="transition-delay: 0.3s;">
+                    <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-500/40 transition-colors">
+                        <span class="text-2xl">📝</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Сесія</h3>
+                    <p class="text-slate-400 text-sm">Окремий розділ для іспитів та заліків з відліком днів.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="py-20 overflow-hidden relative z-10">
+        <div class="container mx-auto max-w-6xl px-6">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-20">
+                
+                <!-- Screen 1 - Left -->
+                <div class="fade-in-up z-10">
+                    <div class="phone-frame w-64 md:w-72 transform rotate-[-6deg] translate-y-12 hover:rotate-0 hover:translate-y-0 transition-all duration-500 shadow-2xl bg-black">
+                        <img src="screen1.png" alt="Сесія" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <!-- Screen 2 - Center -->
+                <div class="fade-in-up z-20" style="transition-delay: 0.1s;">
+                    <div class="phone-frame w-72 md:w-80 shadow-[0_0_50px_rgba(59,130,246,0.2)] bg-black">
+                        <img src="screen2.png" alt="Розклад" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <!-- Screen 3 - Right -->
+                <div class="fade-in-up z-10" style="transition-delay: 0.2s;">
+                    <div class="phone-frame w-64 md:w-72 transform rotate-[6deg] translate-y-12 hover:rotate-0 hover:translate-y-0 transition-all duration-500 shadow-2xl bg-black">
+                        <img src="screen3.png" alt="Головний екран" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Bottom -->
+    <section class="py-20 relative z-10">
+        <div class="container mx-auto max-w-6xl px-6 text-center">
+            <div class="bg-gradient-to-r from-blue-900/40 to-purple-900/40 rounded-3xl p-8 md:p-16 border border-white/5 backdrop-blur-xl fade-in-up shadow-2xl">
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">Готовий до навчання?</h2>
+                <p class="text-slate-300 mb-8 max-w-xl mx-auto">Завантажуй додаток прямо зараз!</p>
+                <a href="KpiSchedule.apk" class="inline-flex items-center bg-white text-slate-900 px-8 py-4 rounded-xl font-bold hover:bg-slate-200 transition-colors shadow-lg hover:shadow-white/20">
+                    <i data-lucide="download" class="w-5 h-5 mr-2"></i>
+                    Завантажити APK
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950/80 backdrop-blur-md pt-12 pb-8 relative z-10">
+        <div class="container mx-auto max-w-6xl px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="text-center md:text-left">
+                    <h3 class="text-xl font-bold flex items-center justify-center md:justify-start gap-2 mb-2">
+                        <i data-lucide="calendar" class="text-blue-500 w-5 h-5"></i>
+                        KPI Schedule
+                    </h3>
+                    <p class="text-slate-500 text-sm">Неофіційний клієнт. Дані надаються schedule.kpi.ua</p>
+                </div>
+                
+                <div class="flex flex-col items-center md:items-end gap-2">
+                    <a href="https://t.me/diimkkaa" target="_blank" class="group flex items-center gap-2 bg-[#229ED9]/10 px-4 py-2 rounded-lg hover:bg-[#229ED9]/20 transition-colors border border-[#229ED9]/20">
+                        <i data-lucide="send" class="w-4 h-4 text-[#229ED9]"></i>
+                        <span class="text-slate-300 group-hover:text-white transition-colors">Made with ❤️ by <span class="text-[#229ED9] font-medium">@diimkkaa</span></span>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-600">
+                &copy; 2025 KPI Schedule. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
 </html>
