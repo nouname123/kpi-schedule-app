@@ -1,306 +1,345 @@
 <!DOCTYPE html>
-<html lang="uk" class="scroll-smooth">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KPI Schedule - Твій розклад у кишені</title>
-    <meta name="description" content="Зручний розклад КПІ для Android. Темна тема, сесія, розклад викладачів.">
+    <title>KpiSchedule v2 — Твій розклад</title>
+    <meta name="description" content="KpiSchedule v2. Сучасний розклад з віджетами, офлайн режимом та налаштуваннями.">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020617; /* Slate 950 - Deep Dark Background */
-            color: #f8fafc;
-        }
-
-        /* Custom Animations */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-
-        /* Blob Animation */
-        @keyframes blob {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
-        }
-
-        .animate-blob {
-            animation: blob 7s infinite;
-        }
-
-        .animation-delay-2000 {
-            animation-delay: 2s;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .kpi-blue { color: #0072C6; }
+        .bg-kpi-blue { background-color: #0072C6; }
+        .hover-kpi-blue:hover { background-color: #005a9e; }
         
-        .animation-delay-4000 {
-            animation-delay: 4s;
+        /* Градієнтний фон */
+        .hero-bg {
+            background: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 100%);
         }
 
-        .fade-in-up {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-
-        .fade-in-up.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Phone Frame Style */
-        .phone-frame {
-            border: 12px solid #1e293b;
-            border-radius: 2.5rem;
+        /* Тінь для телефону в Hero */
+        .phone-mockup-hero {
+            border: 8px solid #334155;
+            border-radius: 34px;
             overflow: hidden;
-            position: relative;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            aspect-ratio: 9/19.5;
-            background: #000;
-        }
-
-        /* Gradient Text */
-        .text-gradient {
-            background: linear-gradient(to right, #60a5fa, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            box-shadow: 0 25px 60px -10px rgba(0, 114, 198, 0.3);
+            transform: rotate(-3deg);
+            transition: all 0.5s ease;
         }
         
+        .phone-mockup-hero:hover {
+            transform: rotate(0deg) scale(1.02);
+            box-shadow: 0 30px 70px -10px rgba(0, 114, 198, 0.4);
+        }
+
+        /* Картка фічі */
+        .feature-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 40px -10px rgba(96, 165, 250, 0.2);
-            border-color: rgba(96, 165, 250, 0.4);
+            border-color: #0072C6;
+            box-shadow: 0 10px 30px -10px rgba(0, 114, 198, 0.3);
+        }
+
+        /* --- ГАЛЕРЕЯ --- */
+        .gallery-wrapper {
+            position: relative;
+            padding: 0 20px;
+        }
+
+        .gallery-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 2rem;
+            padding: 2rem 0;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            
+            /* Ховаємо скролбар */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .gallery-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .gallery-item {
+            flex: 0 0 auto;
+            width: 280px;
+            scroll-snap-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .phone-frame {
+            background-color: #1e293b;
+            border: 6px solid #334155;
+            border-radius: 24px;
+            padding: 4px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .phone-frame img {
+            border-radius: 18px;
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-10px);
+        }
+
+        /* Стрілки навігації */
+        .gallery-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 20;
+            width: 50px;
+            height: 50px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .gallery-nav-btn:hover {
+            background: #0072C6;
+            box-shadow: 0 0 20px rgba(0, 114, 198, 0.5);
+        }
+
+        .gallery-nav-btn.prev { left: 0; }
+        .gallery-nav-btn.next { right: 0; }
+
+        @media (hover: hover) and (pointer: fine) {
+            .gallery-nav-btn {
+                display: flex;
+            }
         }
     </style>
 </head>
-<body class="overflow-x-hidden relative">
+<body class="bg-slate-950 text-white overflow-x-hidden">
 
-    <!-- Background Decoration (Bubbles) -->
-    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <!-- Top Left Blob (Blue) -->
-        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-blob"></div>
-        
-        <!-- Bottom Right Blob (Purple) -->
-        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-600/30 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-2000"></div>
-    </div>
-
-    <!-- Navigation -->
-    <nav class="container mx-auto max-w-6xl px-6 py-6 flex justify-between items-center relative z-10">
-        <div class="text-2xl font-bold flex items-center gap-2">
-            <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <i data-lucide="calendar" class="text-white w-5 h-5"></i>
+    <nav class="fixed w-full z-50 bg-slate-950/80 backdrop-blur-lg border-b border-white/5">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-bold flex items-center gap-2 tracking-wide">
+                <div class="w-8 h-8 bg-kpi-blue rounded-lg flex items-center justify-center">
+                    <i class="fa-solid fa-calendar-check text-white text-sm"></i>
+                </div>
+                KpiSchedule
             </div>
-            <span>KPI Schedule</span>
+            <a href="KpiSchedule.apk" class="bg-white text-slate-950 px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-100 transition shadow-lg shadow-white/10">
+                Завантажити
+            </a>
         </div>
-        <a href="KpiSchedule.apk" class="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2 rounded-full transition-all duration-300">
-            <i data-lucide="download" class="w-4 h-4"></i>
-            <span>Завантажити .apk</span>
-        </a>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="container mx-auto max-w-6xl px-6 pt-10 pb-20 md:pt-20 md:pb-32 relative z-10">
-        <div class="flex flex-col md:flex-row items-center gap-12">
-            
-            <!-- Text Content -->
-            <div class="flex-1 text-center md:text-left space-y-8 fade-in-up">
-                <div class="inline-block px-4 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300 text-sm font-medium mb-2">
-                    Версія 1.0 вже доступна
+    <section class="hero-bg min-h-screen flex items-center pt-28 pb-20 relative overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-full bg-blue-600/10 blur-[120px] -z-10 rounded-full"></div>
+
+        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2 text-center md:text-left z-10" data-aos="fade-up">
+                <div class="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold mb-6 text-blue-300">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                    Нова версія 2.0
                 </div>
-                <h1 class="text-4xl md:text-6xl font-bold leading-tight">
-                    Твій розклад <br />
-                    <span class="text-gradient">завжди під рукою</span>
+                <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
+                    Твій розклад<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+                        завжди під рукою
+                    </span>
                 </h1>
-                <p class="text-lg text-slate-400 max-w-lg mx-auto md:mx-0">
-                    Зручний, швидкий та естетичний клієнт розкладу
+                <p class="text-slate-400 text-lg mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                    Потужний інструмент для навчання. Віджети, розумні сповіщення та можливість ділитися налаштуваннями з групою.
                 </p>
-                
-                <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
-                    <a href="KpiSchedule.apk" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-blue-600 font-pj rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600 hover:bg-blue-700 hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]">
-                        <i data-lucide="download" class="w-5 h-5 mr-2 group-hover:animate-bounce"></i>
-                        Завантажити APK
-                    </a>
-                    <a href="#features" class="px-8 py-4 text-lg font-medium text-slate-300 hover:text-white transition-colors">
-                        Дізнатись більше
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <a href="KpiSchedule.apk" 
+                       class="bg-kpi-blue hover-kpi-blue text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition transform hover:-translate-y-1 shadow-xl shadow-blue-600/30">
+                        <i class="fa-brands fa-android text-2xl"></i>
+                        <span>Завантажити .APK</span>
                     </a>
                 </div>
-                
-                <p class="text-xs text-slate-500 pt-2">
-                    * Для Android пристроїв
-                </p>
             </div>
 
-            <!-- Hero Image / Phone Mockup -->
-            <div class="flex-1 w-full max-w-xs md:max-w-sm mx-auto relative z-10 fade-in-up" style="animation-delay: 0.2s;">
-                <div class="phone-frame animate-float bg-black">
-                    <img src="screen1.png" alt="Головний екран додатку" class="w-full h-full object-cover">
-                </div>
-                <!-- Subtle glow behind phone -->
-                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-blue-500/20 filter blur-3xl -z-10 rounded-full"></div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Features Section -->
-    <section id="features" class="py-20 relative z-10">
-        <div class="container mx-auto max-w-6xl px-6">
-            <div class="text-center mb-16 fade-in-up">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Чому варто спробувати?</h2>
-                <p class="text-slate-400">Всі необхідні інструменти для комфортного навчання.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Feature 1 -->
-                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-blue-500/50 group">
-                    <div class="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-500/40 transition-colors">
-                        <i data-lucide="zap" class="text-blue-400 w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Розумний розклад</h3>
-                    <p class="text-slate-400 text-sm">Автоматично визначає поточний тиждень та підсвічує пари, які йдуть прямо зараз.</p>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-purple-500/50 group" style="transition-delay: 0.1s;">
-                    <div class="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-500/40 transition-colors">
-                        <span class="text-2xl">🎓</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Розклад викладачів</h3>
-                    <p class="text-slate-400 text-sm">Зручний пошук викладачів та перегляд їхнього навантаження.</p>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-indigo-500/50 group" style="transition-delay: 0.2s;">
-                    <div class="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-indigo-500/40 transition-colors">
-                        <span class="text-2xl">🌙</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Темна тема</h3>
-                    <p class="text-slate-400 text-sm">Ідеально для перегляду розкладу вночі. Економить заряд батареї.</p>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="feature-card bg-slate-900/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 transition-all duration-300 fade-in-up hover:border-green-500/50 group" style="transition-delay: 0.3s;">
-                    <div class="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-500/40 transition-colors">
-                        <span class="text-2xl">📝</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Сесія</h3>
-                    <p class="text-slate-400 text-sm">Окремий розділ для іспитів та заліків з відліком днів.</p>
+            <div class="md:w-1/2 flex justify-center relative" data-aos="zoom-out" data-aos-delay="200">
+                <div class="phone-mockup-hero max-w-[320px]">
+                    <img src="img/screen_main.png" alt="Main App Screen" class="w-full h-auto">
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Gallery Section -->
-    <section class="py-20 overflow-hidden relative z-10">
-        <div class="container mx-auto max-w-6xl px-6">
-            <div class="flex flex-col md:flex-row justify-center items-center gap-10 md:gap-20">
-                
-                <!-- Screen 1 - Left -->
-                <div class="fade-in-up z-10">
-                    <div class="phone-frame w-64 md:w-72 transform rotate-[-6deg] translate-y-12 hover:rotate-0 hover:translate-y-0 transition-all duration-500 shadow-2xl bg-black">
-                        <img src="screen1.png" alt="Сесія" class="w-full h-full object-cover">
+    <section class="py-24 bg-slate-900 relative">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-20">
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">Все, що потрібно студенту</h2>
+                <p class="text-slate-400 text-lg">Максимум функціоналу в одному застосунку.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="0">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 text-blue-400 text-2xl">
+                        <i class="fa-solid fa-plane"></i>
                     </div>
+                    <h3 class="text-xl font-bold mb-3">Повний Офлайн</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Розклад автоматично зберігається на телефоні. Немає світла чи інтернету? Розклад все одно відкриється миттєво.
+                    </p>
                 </div>
 
-                <!-- Screen 2 - Center -->
-                <div class="fade-in-up z-20" style="transition-delay: 0.1s;">
-                    <div class="phone-frame w-72 md:w-80 shadow-[0_0_50px_rgba(59,130,246,0.2)] bg-black">
-                        <img src="screen2.png" alt="Розклад" class="w-full h-full object-cover">
+                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-purple-400 text-2xl">
+                        <i class="fa-solid fa-layer-group"></i>
                     </div>
+                    <h3 class="text-xl font-bold mb-3">Стильні Віджети</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Два типи віджетів: повний список пар на день та компактний "Наступна пара". Прозорі, сучасні, інформативні.
+                    </p>
                 </div>
 
-                <!-- Screen 3 - Right -->
-                <div class="fade-in-up z-10" style="transition-delay: 0.2s;">
-                    <div class="phone-frame w-64 md:w-72 transform rotate-[6deg] translate-y-12 hover:rotate-0 hover:translate-y-0 transition-all duration-500 shadow-2xl bg-black">
-                        <img src="screen3.png" alt="Головний екран" class="w-full h-full object-cover">
+                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-6 text-yellow-400 text-2xl">
+                        <i class="fa-solid fa-bell"></i>
                     </div>
+                    <h3 class="text-xl font-bold mb-3">Розумні Сповіщення</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Налаштуй час нагадування. Використовуй <strong>хештеги</strong> (напр. #КР), щоб отримувати сповіщення тільки про важливе.
+                    </p>
                 </div>
 
+                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 text-green-400 text-2xl">
+                        <i class="fa-solid fa-link"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Посилання та Нотатки</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Прикріплюй Zoom/Meet посилання та нотатки до предметів. Вони зберігаються для всіх пар цього типу на весь семестр.
+                    </p>
+                </div>
+
+                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="400">
+                    <div class="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 text-pink-400 text-2xl">
+                        <i class="fa-solid fa-file-export"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Синхронізація Групи</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Староста заповнив усі посилання? Експортуй файл налаштувань і скинь у чат групи. Імпорт в один клік.
+                    </p>
+                </div>
+
+                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="500">
+                    <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 text-cyan-400 text-2xl">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Сучасний Дизайн</h3>
+                    <p class="text-slate-400 leading-relaxed">
+                        Темна тема, Material You компоненти, плавні анімації та відсутність зайвого шуму.
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Bottom -->
-    <section class="py-20 relative z-10">
-        <div class="container mx-auto max-w-6xl px-6 text-center">
-            <div class="bg-gradient-to-r from-blue-900/40 to-purple-900/40 rounded-3xl p-8 md:p-16 border border-white/5 backdrop-blur-xl fade-in-up shadow-2xl">
-                <h2 class="text-3xl md:text-5xl font-bold mb-6">Готовий до навчання?</h2>
-                <p class="text-slate-300 mb-8 max-w-xl mx-auto">Завантажуй додаток прямо зараз!</p>
-                <a href="KpiSchedule.apk" class="inline-flex items-center bg-white text-slate-900 px-8 py-4 rounded-xl font-bold hover:bg-slate-200 transition-colors shadow-lg hover:shadow-white/20">
-                    <i data-lucide="download" class="w-5 h-5 mr-2"></i>
-                    Завантажити APK
+    <section class="py-24 bg-slate-950 overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Галерея застосунку</h2>
+                <p class="text-slate-400 mobile-hint">Гортай свайпом <i class="fa-solid fa-hand-pointer ml-2"></i></p>
+            </div>
+            
+            <div class="gallery-wrapper relative">
+                <button class="gallery-nav-btn prev" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
+
+                <div class="gallery-container" id="galleryContainer">
+                    <div class="gallery-item">
+                        <div class="phone-frame"><img src="img/screen_main.png" alt="Розклад"></div>
+                        <p class="text-center mt-4 font-bold text-slate-300">Головний екран</p>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="phone-frame"><img src="img/screen_details.png" alt="Деталі пари"></div>
+                        <p class="text-center mt-4 font-bold text-slate-300">Деталі та Нотатки</p>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="phone-frame"><img src="img/screen_widgets.png" alt="Віджети"></div>
+                        <p class="text-center mt-4 font-bold text-slate-300">Віджети на робочому столі</p>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="phone-frame"><img src="img/screen_settings.png" alt="Налаштування"></div>
+                        <p class="text-center mt-4 font-bold text-slate-300">Налаштування</p>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="phone-frame"><img src="img/screen_offline.png" alt="Офлайн режим"></div>
+                        <p class="text-center mt-4 font-bold text-slate-300">Офлайн режим</p>
+                    </div>
+                </div>
+
+                <button class="gallery-nav-btn next" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <section id="download" class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-slate-950"></div>
+        <div class="container mx-auto px-6 relative z-10 text-center">
+            <h2 class="text-4xl md:text-6xl font-bold mb-8">Час взяти навчання під контроль</h2>
+            <div class="flex justify-center">
+                <a href="KpiSchedule.apk" 
+                   class="bg-white text-slate-900 px-10 py-5 rounded-2xl font-bold text-xl inline-flex items-center gap-3 hover:bg-blue-50 transition transform hover:-translate-y-1 shadow-2xl">
+                    <i class="fa-solid fa-download text-blue-600"></i>
+                    Завантажити v2.0
                 </a>
             </div>
+            <p class="mt-8 text-slate-500 text-sm">Android 8.0+ • Безкоштовно • Без реклами</p>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-950/80 backdrop-blur-md pt-12 pb-8 relative z-10">
-        <div class="container mx-auto max-w-6xl px-6">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="text-center md:text-left">
-                    <h3 class="text-xl font-bold flex items-center justify-center md:justify-start gap-2 mb-2">
-                        <i data-lucide="calendar" class="text-blue-500 w-5 h-5"></i>
-                        KPI Schedule
-                    </h3>
-                    <p class="text-slate-500 text-sm">Неофіційний клієнт. Дані надаються schedule.kpi.ua</p>
-                </div>
-                
-                <div class="flex flex-col items-center md:items-end gap-2">
-                    <a href="https://t.me/diimkkaa" target="_blank" class="group flex items-center gap-2 bg-[#229ED9]/10 px-4 py-2 rounded-lg hover:bg-[#229ED9]/20 transition-colors border border-[#229ED9]/20">
-                        <i data-lucide="send" class="w-4 h-4 text-[#229ED9]"></i>
-                        <span class="text-slate-300 group-hover:text-white transition-colors">Made with ❤️ by <span class="text-[#229ED9] font-medium">@diimkkaa</span></span>
-                    </a>
-                </div>
+    <footer class="bg-slate-950 py-8 border-t border-white/5">
+        <div class="container mx-auto px-6 text-center text-slate-500">
+            <div class="flex justify-center gap-6 mb-4 text-2xl">
+                <a href="https://t.me/diimkkaa" class="hover:text-blue-400 transition"><i class="fa-brands fa-telegram"></i></a>
             </div>
-            
-            <div class="mt-8 pt-8 border-t border-slate-800 text-center text-xs text-slate-600">
-                &copy; 2025 KPI Schedule. All rights reserved.
-            </div>
+            <p>&copy; 2025 KpiSchedule. Made with <i class="fa-solid fa-heart text-red-500 animate-pulse"></i> by @diimkkaa</p>
         </div>
     </footer>
 
-    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
+        AOS.init({ duration: 800, once: true });
 
-        // Intersection Observer for fade-in animations
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.1
-        };
+        const galleryContainer = document.getElementById('galleryContainer');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const scrollAmount = 312;
 
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
-                }
+        if (nextBtn && prevBtn) {
+            nextBtn.addEventListener('click', () => {
+                galleryContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
             });
-        }, observerOptions);
-
-        document.querySelectorAll('.fade-in-up').forEach(el => {
-            observer.observe(el);
-        });
+            prevBtn.addEventListener('click', () => {
+                galleryContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            });
+        }
     </script>
 </body>
 </html>
