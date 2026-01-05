@@ -1,344 +1,491 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KpiSchedule v2 — Твій розклад</title>
-    <meta name="description" content="KpiSchedule v2. Сучасний розклад з віджетами, офлайн режимом та налаштуваннями.">
+    <title>KpiSchedule v2 — Твій розклад у кишені</title>
+    <meta name="description" content="KpiSchedule v2. Сучасний розклад з віджетами, офлайн режимом та налаштуваннями. Завантажуй у Google Play.">
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .kpi-blue { color: #0072C6; }
-        .bg-kpi-blue { background-color: #0072C6; }
-        .hover-kpi-blue:hover { background-color: #005a9e; }
         
-        /* Градієнтний фон */
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .kpi-blue { color: #0072C6; }
+        
+        /* Hero Background */
         .hero-bg {
             background: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 100%);
         }
 
-        /* Тінь для телефону в Hero */
-        .phone-mockup-hero {
-            border: 8px solid #334155;
-            border-radius: 34px;
-            overflow: hidden;
-            box-shadow: 0 25px 60px -10px rgba(0, 114, 198, 0.3);
-            transform: rotate(-3deg);
-            transition: all 0.5s ease;
-        }
-        
-        .phone-mockup-hero:hover {
-            transform: rotate(0deg) scale(1.02);
-            box-shadow: 0 30px 70px -10px rgba(0, 114, 198, 0.4);
+        /* --- 3D SCENE CONFIG --- */
+        .phone-3d-wrapper {
+            position: relative;
+            width: 280px;
+            /* Легкий поворот сцени */
+            transform: perspective(1000px) rotateY(-10deg) rotateX(5deg);
+            transform-style: preserve-3d; 
+            margin: 0 auto;
         }
 
-        /* Картка фічі */
+        /* Телефон (по центру Z) */
+        .phone-mockup-hero {
+            border: 8px solid #1e293b;
+            border-radius: 34px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.5);
+            background: #000;
+            position: relative;
+            transform: translateZ(0px); /* База */
+        }
+
+        /* Шар ПЕРЕД телефоном (всі чіпи тут, щоб їх було видно) */
+        .layer-front {
+            position: absolute;
+            /* Висуваємо вперед на 50px від телефону -> нічого не перекривається */
+            transform: translateZ(50px);
+            z-index: 20;
+            pointer-events: none; 
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        /* Анімація плавання для контенту чіпів */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating-content {
+            pointer-events: auto;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            animation: float 5s ease-in-out infinite;
+            background: rgba(30, 41, 59, 0.9);
+            position: absolute;
+        }
+        
+        /* Різна швидкість для різноманітності */
+        .float-delay-1 { animation-delay: 0s; }
+        .float-delay-2 { animation-delay: 1.5s; }
+        .float-delay-3 { animation-delay: 2.5s; }
+
+        /* Features */
         .feature-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.3s ease;
         }
         .feature-card:hover {
             transform: translateY(-5px);
+            border-color: rgba(0, 114, 198, 0.5);
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        /* FAQ Styles */
+        .faq-item {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.6);
+            transition: all 0.3s ease;
+        }
+        .faq-item.active {
             border-color: #0072C6;
-            box-shadow: 0 10px 30px -10px rgba(0, 114, 198, 0.3);
+            background: rgba(30, 41, 59, 0.4);
+        }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+        }
+        .faq-icon {
+            transition: transform 0.3s ease;
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
         }
 
-        /* --- ГАЛЕРЕЯ --- */
-        .gallery-wrapper {
-            position: relative;
-            padding: 0 20px;
-        }
-
+        /* Gallery */
         .gallery-container {
-            display: flex;
-            overflow-x: auto;
-            gap: 2rem;
-            padding: 2rem 0;
-            scroll-snap-type: x mandatory;
-            scroll-behavior: smooth;
-            
-            /* Ховаємо скролбар */
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
-        .gallery-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .gallery-item {
-            flex: 0 0 auto;
-            width: 280px;
-            scroll-snap-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .phone-frame {
-            background-color: #1e293b;
-            border: 6px solid #334155;
-            border-radius: 24px;
-            padding: 4px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .phone-frame img {
-            border-radius: 18px;
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .gallery-item:hover {
-            transform: translateY(-10px);
-        }
-
-        /* Стрілки навігації */
-        .gallery-nav-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 20;
-            width: 50px;
-            height: 50px;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-
-        .gallery-nav-btn:hover {
-            background: #0072C6;
-            box-shadow: 0 0 20px rgba(0, 114, 198, 0.5);
-        }
-
-        .gallery-nav-btn.prev { left: 0; }
-        .gallery-nav-btn.next { right: 0; }
-
-        @media (hover: hover) and (pointer: fine) {
-            .gallery-nav-btn {
-                display: flex;
-            }
-        }
+        .gallery-container::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-950 text-white overflow-x-hidden">
+<body class="bg-slate-950 text-white overflow-x-hidden selection:bg-blue-500 selection:text-white">
 
-    <nav class="fixed w-full z-50 bg-slate-950/80 backdrop-blur-lg border-b border-white/5">
+    <nav class="fixed w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 transition-all duration-300">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-xl font-bold flex items-center gap-2 tracking-wide">
-                <div class="w-8 h-8 bg-kpi-blue rounded-lg flex items-center justify-center">
+            <a href="#" class="text-xl font-bold flex items-center gap-3 tracking-wide hover:opacity-80 transition">
+                <div class="w-9 h-9 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/50">
                     <i class="fa-solid fa-calendar-check text-white text-sm"></i>
                 </div>
-                KpiSchedule
+                <span>KpiSchedule</span>
+            </a>
+            <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
+                <a href="#features" class="hover:text-white transition">Можливості</a>
+                <a href="#gallery" class="hover:text-white transition">Галерея</a>
+                <a href="#faq" class="hover:text-white transition">FAQ</a>
             </div>
-            <a href="KpiSchedule.apk" class="bg-white text-slate-950 px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-100 transition shadow-lg shadow-white/10">
+            <a href="#download" class="bg-white text-slate-950 px-5 py-2 rounded-full font-bold text-sm hover:bg-blue-50 transition shadow-lg shadow-white/5">
                 Завантажити
             </a>
         </div>
     </nav>
 
-    <section class="hero-bg min-h-screen flex items-center pt-28 pb-20 relative overflow-hidden">
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-full bg-blue-600/10 blur-[120px] -z-10 rounded-full"></div>
+    <section class="hero-bg min-h-screen flex items-center pt-32 pb-20 relative overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[500px] bg-blue-600/20 blur-[120px] -z-10 rounded-full pointer-events-none"></div>
 
-        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row items-center gap-12 lg:gap-20">
             <div class="md:w-1/2 text-center md:text-left z-10" data-aos="fade-up">
-                <div class="inline-flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1 rounded-full text-xs font-semibold mb-6 text-blue-300">
-                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    Нова версія 2.0
+                <div class="inline-flex items-center gap-2 bg-slate-900/50 border border-slate-700/50 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 text-blue-300 hover:bg-slate-800 transition cursor-default">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    Вже в Google Play
                 </div>
-                <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6 tracking-tight">
+                
+                <h1 class="text-5xl md:text-7xl font-extrabold leading-[1.1] mb-6 tracking-tight">
                     Твій розклад<br>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-300">
                         завжди під рукою
                     </span>
                 </h1>
-                <p class="text-slate-400 text-lg mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
-                    Потужний інструмент для навчання. Віджети, розумні сповіщення та можливість ділитися налаштуваннями з групою.
+                
+                <p class="text-slate-400 text-lg mb-10 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                    Забудь про сайти. Віджети, офлайн режим, посилання на пари та автоматична синхронізація.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    <a href="KpiSchedule.apk" 
-                       class="bg-kpi-blue hover-kpi-blue text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition transform hover:-translate-y-1 shadow-xl shadow-blue-600/30">
-                        <i class="fa-brands fa-android text-2xl"></i>
-                        <span>Завантажити .APK</span>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start items-center">
+                    <a href="https://play.google.com/store/apps/details?id=com.dimsalim.kpischedule" target="_blank"
+                       class="group bg-white text-slate-950 px-4 py-3 rounded-xl flex items-center gap-4 transition-all hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20 border border-transparent hover:border-blue-200">
+                        <i class="fa-brands fa-google-play text-3xl" style="color: #00875F;"></i>
+                        <div class="text-left">
+                            <div class="text-[10px] uppercase font-bold text-slate-500 leading-none mb-1">Завантажити з</div>
+                            <div class="text-xl font-bold leading-none font-sans">Google Play</div>
+                        </div>
+                    </a>
+                    
+                    <a href="#features" class="px-6 py-3 rounded-xl text-slate-300 font-medium hover:text-white hover:bg-white/5 transition flex items-center gap-2">
+                        Дізнатись більше <i class="fa-solid fa-arrow-down text-sm"></i>
                     </a>
                 </div>
             </div>
 
-            <div class="md:w-1/2 flex justify-center relative" data-aos="zoom-out" data-aos-delay="200">
-                <div class="phone-mockup-hero max-w-[320px]">
-                    <img src="img/screen_main.png" alt="Main App Screen" class="w-full h-auto">
+            <div class="md:w-1/2 flex justify-center relative py-10" data-aos="zoom-out" data-aos-delay="200">
+                <div class="phone-3d-wrapper">
+                    
+                    <div class="phone-mockup-hero w-full">
+                        <img src="img/1.png" alt="Main App Screen" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="layer-front">
+                        
+                        <div class="floating-content float-delay-2 p-3 rounded-xl flex items-center gap-3" style="left: -30px; top: 160px;">
+                            <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-rotate text-green-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 leading-none mb-0.5">Синхронізація</p>
+                                <p class="text-xs font-bold text-white leading-none">Розклад оновлено</p>
+                            </div>
+                        </div>
+
+                        <div class="floating-content float-delay-1 p-3 rounded-xl flex items-center gap-3" style="right: -30px; top: 40px;">
+                            <div class="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-bell text-yellow-400 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 leading-none mb-0.5">Сповіщення</p>
+                                <p class="text-xs font-bold text-white leading-none">Пара через 10 хв!</p>
+                            </div>
+                        </div>
+
+                        <div class="floating-content float-delay-3 p-3 rounded-xl flex items-center gap-3" style="right: -20px; bottom: 60px;">
+                            <div class="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-layer-group text-purple-400 text-sm"></i>
+                            </div>
+                            <p class="text-xs font-bold text-white">Віджети</p>
+                        </div>
+                        
+                    </div>
+
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-24 bg-slate-900 relative">
+    <section id="features" class="py-24 bg-slate-900/50 relative">
         <div class="container mx-auto px-6">
             <div class="text-center mb-20">
                 <h2 class="text-3xl md:text-5xl font-bold mb-6">Все, що потрібно студенту</h2>
-                <p class="text-slate-400 text-lg">Максимум функціоналу в одному застосунку.</p>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto">Ми прибрали все зайве і залишили тільки те, що дійсно допомагає у навчанні.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="0">
-                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 text-blue-400 text-2xl">
-                        <i class="fa-solid fa-plane"></i>
+                <div class="feature-card p-8 rounded-3xl group" data-aos="fade-up">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 text-blue-400 text-2xl group-hover:scale-110 transition duration-300">
+                        <i class="fa-solid fa-wifi"></i>
                     </div>
                     <h3 class="text-xl font-bold mb-3">Повний Офлайн</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        Розклад автоматично зберігається на телефоні. Немає світла чи інтернету? Розклад все одно відкриється миттєво.
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Розклад кешується на пристрої. Немає світла чи інтернету? Не проблема, розклад відкриється миттєво.
                     </p>
                 </div>
-
-                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="100">
-                    <div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-purple-400 text-2xl">
+                <div class="feature-card p-8 rounded-3xl group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 text-purple-400 text-2xl group-hover:scale-110 transition duration-300">
                         <i class="fa-solid fa-layer-group"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Стильні Віджети</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        Два типи віджетів: повний список пар на день та компактний "Наступна пара". Прозорі, сучасні, інформативні.
+                    <h3 class="text-xl font-bold mb-3">Віджети на екран</h3>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Два типи віджетів: повний список пар на день та компактний "Наступна пара". Завжди перед очима.
                     </p>
                 </div>
-
-                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="200">
-                    <div class="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-6 text-yellow-400 text-2xl">
+                <div class="feature-card p-8 rounded-3xl group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-14 h-14 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-6 text-yellow-400 text-2xl group-hover:scale-110 transition duration-300">
                         <i class="fa-solid fa-bell"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Розумні Сповіщення</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        Налаштуй час нагадування. Використовуй <strong>хештеги</strong> (напр. #КР), щоб отримувати сповіщення тільки про важливе.
+                    <h3 class="text-xl font-bold mb-3">Фільтр сповіщень</h3>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Використовуй хештеги (напр. #відмічають), щоб отримувати сповіщення тільки про дійсно важливі пари.
                     </p>
                 </div>
-
-                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="300">
-                    <div class="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 text-green-400 text-2xl">
+                <div class="feature-card p-8 rounded-3xl group" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-14 h-14 bg-green-500/10 rounded-2xl flex items-center justify-center mb-6 text-green-400 text-2xl group-hover:scale-110 transition duration-300">
                         <i class="fa-solid fa-link"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Посилання та Нотатки</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        Прикріплюй Zoom/Meet посилання та нотатки до предметів. Вони зберігаються для всіх пар цього типу на весь семестр.
+                    <h3 class="text-xl font-bold mb-3">Посилання на Zoom/Meet</h3>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Додай посилання один раз, і воно автоматично підтягнеться до всіх пар цього предмету на весь семестр.
                     </p>
                 </div>
-
-                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="400">
-                    <div class="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 text-pink-400 text-2xl">
-                        <i class="fa-solid fa-file-export"></i>
+                <div class="feature-card p-8 rounded-3xl group" data-aos="fade-up" data-aos-delay="400">
+                    <div class="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center mb-6 text-pink-400 text-2xl group-hover:scale-110 transition duration-300">
+                        <i class="fa-solid fa-share-nodes"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Синхронізація Групи</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        Староста заповнив усі посилання? Експортуй файл налаштувань і скинь у чат групи. Імпорт в один клік.
+                    <h3 class="text-xl font-bold mb-3">Експорт налаштувань</h3>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Вже налаштували всі посилання? Експортуйте файл і скиньте у чат. Інші зможуть імпортувати дані в один клік.
                     </p>
                 </div>
-
-                <div class="feature-card p-8 rounded-3xl" data-aos="fade-up" data-aos-delay="500">
-                    <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 text-cyan-400 text-2xl">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <div class="feature-card p-8 rounded-3xl group" data-aos="fade-up" data-aos-delay="500">
+                    <div class="w-14 h-14 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 text-cyan-400 text-2xl group-hover:scale-110 transition duration-300">
+                        <i class="fa-solid fa-palette"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Сучасний Дизайн</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        Темна тема, Material You компоненти, плавні анімації та відсутність зайвого шуму.
+                    <h3 class="text-xl font-bold mb-3">Material You</h3>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Адаптивний дизайн, темна тема, підтримка системних кольорів Android 12+. Красиво у будь-яких умовах.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-24 bg-slate-950 overflow-hidden">
+    <section id="gallery" class="py-24 bg-slate-950 overflow-hidden border-t border-white/5">
         <div class="container mx-auto px-6">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Галерея застосунку</h2>
-                <p class="text-slate-400 mobile-hint">Гортай свайпом <i class="fa-solid fa-hand-pointer ml-2"></i></p>
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">Галерея застосунку</h2>
+                    <p class="text-slate-400">Інтерфейс, яким приємно користуватися.</p>
+                </div>
+                <div class="flex gap-4">
+                    <button id="prevBtn" class="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/30 transition text-white">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button id="nextBtn" class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center hover:bg-blue-500 transition text-white shadow-lg shadow-blue-900/40">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
             
-            <div class="gallery-wrapper relative">
-                <button class="gallery-nav-btn prev" id="prevBtn"><i class="fa-solid fa-chevron-left"></i></button>
-
-                <div class="gallery-container" id="galleryContainer">
-                    <div class="gallery-item">
-                        <div class="phone-frame"><img src="img/screen_main.png" alt="Розклад"></div>
-                        <p class="text-center mt-4 font-bold text-slate-300">Головний екран</p>
+            <div class="gallery-container flex gap-8 overflow-x-auto pb-12 snap-x snap-mandatory px-4" id="galleryContainer">
+                
+                <div class="snap-center shrink-0 w-[280px]">
+                    <div class="relative rounded-[24px] p-2 bg-gradient-to-b from-slate-700/20 to-slate-900/20 border border-white/10 backdrop-blur-sm shadow-2xl">
+                        <div class="rounded-[16px] overflow-hidden">
+                            <img src="img/screen_main.png" alt="Головний екран" class="w-full h-auto object-cover">
+                        </div>
                     </div>
-                    <div class="gallery-item">
-                        <div class="phone-frame"><img src="img/screen_details.png" alt="Деталі пари"></div>
-                        <p class="text-center mt-4 font-bold text-slate-300">Деталі та Нотатки</p>
-                    </div>
-                    <div class="gallery-item">
-                        <div class="phone-frame"><img src="img/screen_widgets.png" alt="Віджети"></div>
-                        <p class="text-center mt-4 font-bold text-slate-300">Віджети на робочому столі</p>
-                    </div>
-                    <div class="gallery-item">
-                        <div class="phone-frame"><img src="img/screen_settings.png" alt="Налаштування"></div>
-                        <p class="text-center mt-4 font-bold text-slate-300">Налаштування</p>
-                    </div>
-                    <div class="gallery-item">
-                        <div class="phone-frame"><img src="img/screen_offline.png" alt="Офлайн режим"></div>
-                        <p class="text-center mt-4 font-bold text-slate-300">Офлайн режим</p>
-                    </div>
+                    <p class="text-center mt-6 font-semibold text-slate-300">Головний екран</p>
                 </div>
 
-                <button class="gallery-nav-btn next" id="nextBtn"><i class="fa-solid fa-chevron-right"></i></button>
+                <div class="snap-center shrink-0 w-[280px]">
+                    <div class="relative rounded-[24px] p-2 bg-gradient-to-b from-slate-700/20 to-slate-900/20 border border-white/10 backdrop-blur-sm shadow-2xl">
+                        <div class="rounded-[16px] overflow-hidden">
+                            <img src="img/screen_details.png" alt="Деталі та Посилання" class="w-full h-auto object-cover">
+                        </div>
+                    </div>
+                    <p class="text-center mt-6 font-semibold text-slate-300">Деталі та Посилання</p>
+                </div>
+
+                <div class="snap-center shrink-0 w-[280px]">
+                    <div class="relative rounded-[24px] p-2 bg-gradient-to-b from-slate-700/20 to-slate-900/20 border border-white/10 backdrop-blur-sm shadow-2xl">
+                        <div class="rounded-[16px] overflow-hidden">
+                            <img src="img/screen_widgets.png" alt="Віджети" class="w-full h-auto object-cover">
+                        </div>
+                    </div>
+                    <p class="text-center mt-6 font-semibold text-slate-300">Віджети</p>
+                </div>
+
+                <div class="snap-center shrink-0 w-[280px]">
+                    <div class="relative rounded-[24px] p-2 bg-gradient-to-b from-slate-700/20 to-slate-900/20 border border-white/10 backdrop-blur-sm shadow-2xl">
+                        <div class="rounded-[16px] overflow-hidden">
+                            <img src="img/notification.png" alt="Live Update" class="w-full h-auto object-cover">
+                        </div>
+                    </div>
+                    <p class="text-center mt-6 font-semibold text-slate-300">Live Update-сповіщення</p>
+                </div>
+
             </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-24 bg-slate-900 relative">
+        <div class="container mx-auto px-6 max-w-3xl">
+            <div class="text-center mb-16">
+                <span class="text-blue-400 font-bold tracking-wider text-sm uppercase mb-2 block">Підтримка</span>
+                <h2 class="text-3xl md:text-5xl font-bold mb-6">Часті запитання</h2>
+            </div>
+            <div id="faq-list" class="flex flex-col gap-4"></div>
         </div>
     </section>
 
     <section id="download" class="py-24 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-slate-950"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-slate-950 pointer-events-none"></div>
         <div class="container mx-auto px-6 relative z-10 text-center">
-            <h2 class="text-4xl md:text-6xl font-bold mb-8">Час взяти навчання під контроль</h2>
-            <div class="flex justify-center">
-                <a href="KpiSchedule.apk" 
-                   class="bg-white text-slate-900 px-10 py-5 rounded-2xl font-bold text-xl inline-flex items-center gap-3 hover:bg-blue-50 transition transform hover:-translate-y-1 shadow-2xl">
-                    <i class="fa-solid fa-download text-blue-600"></i>
-                    Завантажити v2.0
+            <h2 class="text-4xl md:text-5xl font-bold mb-8">Час взяти навчання під контроль</h2>
+            <div class="flex justify-center flex-col items-center gap-6">
+                <a href="https://play.google.com/store/apps/details?id=com.dimsalim.kpischedule" target="_blank"
+                   class="bg-white text-slate-900 px-8 py-4 rounded-2xl font-bold text-xl inline-flex items-center gap-4 hover:bg-blue-50 transition transform hover:-translate-y-1 shadow-[0_20px_50px_rgba(255,255,255,0.1)]">
+                   <i class="fa-brands fa-google-play text-3xl" style="color: #00875F;"></i>
+                   <span>Завантажити з Google Play</span>
                 </a>
+                <p class="text-slate-500 text-sm">Android 7.0+ • Безкоштовно • Без реклами</p>
             </div>
-            <p class="mt-8 text-slate-500 text-sm">Android 8.0+ • Безкоштовно • Без реклами</p>
         </div>
     </section>
 
-    <footer class="bg-slate-950 py-8 border-t border-white/5">
-        <div class="container mx-auto px-6 text-center text-slate-500">
-            <div class="flex justify-center gap-6 mb-4 text-2xl">
-                <a href="https://t.me/diimkkaa" class="hover:text-blue-400 transition"><i class="fa-brands fa-telegram"></i></a>
+    <footer class="bg-slate-950 py-12 border-t border-white/5 text-sm">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                
+                <div class="text-center md:text-left">
+                    <div class="text-xl font-bold text-white mb-2">KpiSchedule</div>
+                    <p class="text-slate-500">Зроблено студентом для студентів.</p>
+                </div>
+
+                <div class="flex gap-6 text-slate-400">
+                    <a href="privacy_policy.html" class="hover:text-white transition">Політика конфіденційності</a>
+                    <a href="https://t.me/diimkkaa" target="_blank" class="hover:text-white transition">Підтримка</a>
+                </div>
+
+                <div class="flex gap-4">
+                    <a href="https://t.me/diimkkaa" target="_blank" class="w-10 h-10 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-blue-500 hover:bg-blue-600 transition">
+                        <i class="fa-brands fa-telegram"></i>
+                    </a>
+                </div>
             </div>
-            <p>&copy; 2025 KpiSchedule. Made with <i class="fa-solid fa-heart text-red-500 animate-pulse"></i> by @diimkkaa</p>
+            
+            <div class="mt-8 pt-8 border-t border-white/5 text-center text-slate-600 text-xs">
+                &copy; 2025 KpiSchedule. Created by @diimkkaa
+            </div>
         </div>
     </footer>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({ duration: 800, once: true });
+        AOS.init({ duration: 800, once: true, offset: 50 });
 
+        // Gallery
         const galleryContainer = document.getElementById('galleryContainer');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
-        const scrollAmount = 312;
+        const scrollAmount = 300;
 
         if (nextBtn && prevBtn) {
-            nextBtn.addEventListener('click', () => {
-                galleryContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            nextBtn.addEventListener('click', () => { galleryContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' }); });
+            prevBtn.addEventListener('click', () => { galleryContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' }); });
+        }
+
+		// FAQ Logic
+		const faqData = [
+			{
+				question: "Як оновлюється розклад?",
+				answer: "Розклад оновлюється автоматично та не потребує ручного втручання з боку користувача. Застосунок регулярно перевіряє наявність змін і відображає актуальну версію розкладу, щойно вона стає доступною."
+			},
+			{
+				question: "Як додати або змінити свою групу?",
+				answer: "Під час першого запуску застосунку введіть назву своєї групи (наприклад, ПБ-42). Якщо ви змінили групу або припустилися помилки, її можна змінити в будь-який момент у налаштуваннях профілю."
+			},
+			{
+				question: "Чому не працюють віджети?",
+				answer: "На деяких оболонках , система може обмежувати роботу застосунків у фоновому режимі. Для коректної роботи віджетів переконайтеся, що дозволено фонову роботу, автозапуск і вимкнено обмеження енергозбереження."
+			},
+			{
+				question: "Чи є версія для iOS?",
+				answer: "Наразі ми зосереджені виключно на підтримці та розвитку Android-версії застосунку. Розробка версії для iOS на даний момент не планується."
+			},
+			{
+				question: "Чому не працює Status Chip у Live Update-сповіщеннях?",
+				answer: "Функція Status Chip підтримується лише на пристроях з Android 16 і вище. На деяких телефонах також необхідно вручну увімкнути пункт «Живі сповіщення для всіх програм» у налаштуваннях для розробників."
+			},
+			{
+				question: "Чи потрібне підключення до інтернету?",
+				answer: "Інтернет-з’єднання необхідне для первинного завантаження та оновлення розкладу. Останній завантажений розклад доступний офлайн, однак без інтернету оновлення виконуватися не будуть."
+			},
+			{
+				question: "Як звернутися до служби підтримки?",
+				answer: "Якщо у вас виникли проблеми з роботою застосунку або є запитання, ви можете звернутися до служби підтримки. Кнопка підтримки розташована внизу сторінки та веде до Telegram-чату розробника."
+            }
+		];
+
+
+        const faqContainer = document.getElementById('faq-list');
+
+        faqData.forEach((item) => {
+            const faqHtml = `
+                <div class="faq-item rounded-2xl overflow-hidden cursor-pointer" onclick="toggleFaq(this)">
+                    <div class="p-6 flex justify-between items-center gap-4">
+                        <h3 class="font-bold text-lg text-slate-200">${item.question}</h3>
+                        <i class="fa-solid fa-chevron-down text-slate-500 faq-icon"></i>
+                    </div>
+                    <div class="faq-answer px-6 text-slate-400">
+                        <div class="pb-6 leading-relaxed border-t border-white/5 pt-4">
+                            ${item.answer}
+                        </div>
+                    </div>
+                </div>
+            `;
+            faqContainer.insertAdjacentHTML('beforeend', faqHtml);
+        });
+
+        function toggleFaq(element) {
+            const allFaqs = document.querySelectorAll('.faq-item');
+            allFaqs.forEach(el => {
+                if (el !== element) {
+                    el.classList.remove('active');
+                    el.querySelector('.faq-answer').style.maxHeight = null;
+                }
             });
-            prevBtn.addEventListener('click', () => {
-                galleryContainer.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-            });
+            element.classList.toggle('active');
+            const content = element.querySelector('.faq-answer');
+            content.style.maxHeight = element.classList.contains('active') ? content.scrollHeight + "px" : null;
         }
     </script>
 </body>
